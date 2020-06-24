@@ -14,14 +14,14 @@ https://www.coursera.org/learn/build-app/discussions
 
 ## Prior Courses' projects
 
-Course 1 \
+Course 1 
 - https://github.com/yeuchi/Swift5ImageProcessor
 
-Course 2 \
+Course 2 
 - https://github.com/yeuchi/SwiftDevBasic
 - https://github.com/yeuchi/InstaFilterApp
 
-Course 3 \
+Course 3 
 - https://github.com/yeuchi/SwiftDesignDev
 - https://github.com/yeuchi/OptionOne_CourseThree
 
