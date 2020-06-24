@@ -27,7 +27,10 @@ https://github.com/yeuchi/OptionOne_CourseThree
 
 
 ## Projects Detail and Rubrics 
+https://github.com/yeuchi/Course4iOS/blob/master/FinalProject.docx
 
+## Yelp Demo Extended 
+Mike Spears demonstrates communication with Yelp Service API.
 
 # IDE
 XCode 11.1 Swift 5.2
