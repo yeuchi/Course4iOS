@@ -15,15 +15,15 @@ https://www.coursera.org/learn/build-app/discussions
 ## Prior Courses' projects
 
 Course 1 \
-https://github.com/yeuchi/Swift5ImageProcessor
+- https://github.com/yeuchi/Swift5ImageProcessor
 
 Course 2 \
-https://github.com/yeuchi/SwiftDevBasic
-https://github.com/yeuchi/InstaFilterApp
+- https://github.com/yeuchi/SwiftDevBasic
+- https://github.com/yeuchi/InstaFilterApp
 
 Course 3 \
-https://github.com/yeuchi/SwiftDesignDev
-https://github.com/yeuchi/OptionOne_CourseThree
+- https://github.com/yeuchi/SwiftDesignDev
+- https://github.com/yeuchi/OptionOne_CourseThree
 
 
 ## Projects Detail and Rubrics 
