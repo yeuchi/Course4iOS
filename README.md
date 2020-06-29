@@ -40,3 +40,6 @@ All testings were performed with an iPhone 8 (16B91) portrait mode. \
 Above screenshots were produced on a MacBookPro OS Catalina.
 
 # References 
+
+1. Yelp
+https://www.yelp.ca/developers/documentation/v3/get_started
