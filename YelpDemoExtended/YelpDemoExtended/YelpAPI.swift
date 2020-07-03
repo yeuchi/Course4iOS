@@ -12,7 +12,10 @@ extension String {
         let allowed = NSMutableCharacterSet.alphanumeric()
         allowed.addCharacters(in: exceptions)
         
-        return stringByAddingPercentEncodingWithAllowedCharacters(allowed)
+        //allowed.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        //return stringByAddingPercentEncodingWithAllowedCharacters(allowed)
+        /* need to figure out what this is about*/
+        return ""
     }
 }
 
@@ -46,25 +49,51 @@ class YelpAPIClient {
     static func connectClient (id: String, secret: String, completion: (YelpAPIClient?, NSError?) -> Void) {
         
         let requestString = "\(AuthURL)?grant_type=client_credentials&client_id=\(id.encodedStringForURLEncodedFormData()!)&client_secret=\(secret.encodedStringForURLEncodedFormData()!)"
-        guard let requestURL = NSURL(string: requestString) else {
-            let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.URLFormattingError.rawValue, userInfo: [NSLocalizedDescriptionKey: "URL Formatting Error"])
-            dispatch_async(dispatch_get_main_queue(), { 
-                completion(nil, error)
-            })
+        
+        guard let requestURL = NSURL(string: requestString)
+            
+            else {
+                let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.URLFormattingError.rawValue, userInfo: [NSLocalizedDescriptionKey: "URL Formatting Error"])
+            
+                /*DispatchQueue.main.async {
+                    completion(nil, error)
+                }*/
             return
         }
         
-        let request = NSMutableURLRequest(URL: requestURL as URL)
-        request.HTTPMethod = "POST"
+        /*
+         * HTTP POST request
+         * https://www.appsdeveloperblog.com/http-post-request-example-in-swift/
+         */
         
-        URLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
-            guard error == nil else {
+        var request = URLRequest(url: requestURL as URL)
+        request.httpMethod = "POST"
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            /*(guard error == nil else {
                 dispatch_async(dispatch_get_main_queue(), {
                     completion(nil, error)
                 })
                 return
-            }
+            }*/
+ 
+             if let error = error {
+                print("Error took place \(error)")
+                return
+             }
             
+            if let jsonData = data, let dataString = String(data: jsonData, encoding: .utf8){
+                guard let json = (try? JSONSerialization.jsonObject(with: jsonData, options: [])) as? Dictionary<String, AnyObject>
+                    else
+                {
+                    print("Failed to parse jsonData")
+                    /*
+                    DispatchQueue.main.async {
+                        completion(nil, NSError(domain: "YelpAPIClient", code: YelpAPIClientError.JSONFormatError.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient could not decode json response."]))
+                    }*/
+                return
+            }
+          /*
             guard let jsonData = data else {
                 let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.MissingData.rawValue, userInfo: [NSLocalizedDescriptionKey:"YelpAPIClient server response did not include any data."])
                 dispatch_async(dispatch_get_main_queue(), {
@@ -73,27 +102,27 @@ class YelpAPIClient {
                 return
             }
             
-            guard let json = (try? NSJSONSerialization.JSONObjectWithData(jsonData, options: [])) as? Dictionary<String, AnyObject> else {
-                dispatch_async(dispatch_get_main_queue(), { 
-                    completion(nil, NSError(domain: "YelpAPIClient", code: YelpAPIClientError.JSONFormatError.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient could not decode json response."]))
-                })
-                
-                return
-            }
             
-            guard let accessToken = json["access_token"] as? String else {
-                dispatch_async(dispatch_get_main_queue(), { 
+            }*/
+            
+            guard let accessToken = json["access_token"] as? String
+                else {
+                /*
+                    DispatchQueue.main.async {
                     completion(nil, NSError(domain: "YelpAPIClient", code: YelpAPIClientError.TokenResponseMissing.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient token missing from response."]))
-                })
+                }*/
                 return
             }
             
-            dispatch_async(dispatch_get_main_queue(), { 
+            /*DispatchQueue.main.async {
                 completion(YelpAPIClient(token: accessToken), nil)
-            })
+            }*/
+            YelpAPIClient(token: accessToken)
             
             
-        }.resume()
+            }
+        }
+        task.resume()
         
     }
     
@@ -111,17 +140,19 @@ class YelpAPIClient {
         // Encode the search strings before embedding them in the url.
         guard let encodedTerm = term.encodedStringForURLEncodedFormData() else {
             let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.StringEncodingError.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient string encoding error."])
-            dispatch_async(dispatch_get_main_queue(), {
+            /*
+            DispatchQueue.main.async {
                 completion(nil, error)
-            })
+            }*/
             return
         }
         
         guard let encodedLocation = location.encodedStringForURLEncodedFormData() else {
             let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.StringEncodingError.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient string encoding error."])
-            dispatch_async(dispatch_get_main_queue(), {
+            /*
+            DispatchQueue.main.async {
                 completion(nil, error)
-            })
+            }*/
             return
         }
         
@@ -129,53 +160,59 @@ class YelpAPIClient {
         let requestString = "\(YelpAPIClient.SearchURL)?term=\(encodedTerm)&location=\(encodedLocation)"
         guard let requestURL = NSURL(string: requestString) else {
             let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.URLFormattingError.rawValue, userInfo: [NSLocalizedDescriptionKey: "URL Formatting Error"])
-            dispatch_async(dispatch_get_main_queue(), {
+            /*
+            DispatchQueue.main.async {
                 completion(nil, error)
-            })
+            }*/
             return
         }
         
         // Create the URL request. Note we need to include the current access token as an HTTP header field value.
-        let request = NSMutableURLRequest(URL: requestURL)
+        var request = URLRequest(url: requestURL as URL)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         // Send the network data task.
         // Don't forget to call resume() on the new data task!
         
-        NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+        //NSURLSession.sharedSession().dataTaskWithRequest(request) { (data, response, error) in
             
-            guard error == nil else {
-                dispatch_async(dispatch_get_main_queue(), {
-                    completion(nil, error)
-                })
+            guard error == nil
+                else {
+                /*
+                    DispatchQueue.main.async  {
+                    completion(nil, error as NSError?)
+                }*/
                 return
             }
             
             // Make sure some data was returned.
             guard let jsonData = data else {
                 let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.MissingData.rawValue, userInfo: [NSLocalizedDescriptionKey:"YelpAPIClient server response did not include any data."])
-                dispatch_async(dispatch_get_main_queue(), {
+                /*
+                DispatchQueue.main.async {
                     completion(nil, error)
-                })
+                }*/
                 return
             }
             
             // Parse the raw text data into an object.
-            guard let json = (try? NSJSONSerialization.JSONObjectWithData(jsonData, options: [])) as? Dictionary<String,AnyObject> else {
+            guard let json = (try? JSONSerialization.jsonObject(with: jsonData, options: [])) as? Dictionary<String,AnyObject> else {
                 let error = NSError(domain: "YelpAPIClient", code: YelpAPIClientError.JSONFormatError.rawValue, userInfo: [NSLocalizedDescriptionKey: "YelpAPIClient could not decode json response."])
-                dispatch_async(dispatch_get_main_queue(), {
+                /*
+                DispatchQueue.main.async {
                     completion(nil, error)
-                })
+                }*/
                 return
             }
             
             // Return the JSON object if everything is ok.
-            dispatch_async(dispatch_get_main_queue(), {
-                completion(json, nil)
-            })
-            
-            
-        }.resume()
+            /*
+            DispatchQueue.main.async {
+                completion(json as AnyObject, nil)
+            }*/  
+        }
+        task.resume()
         
         
     }
